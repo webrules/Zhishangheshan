@@ -1,0 +1,7 @@
+name = "zhishangshanhe"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zhishangheshan-db"
+database_id = "5b6df0e4-cb04-4b83-8f02-11dc92365dbc"
