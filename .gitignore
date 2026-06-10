@@ -1,6 +1,9 @@
 node_modules/
 dist/
 .wrangler/
+.wrangler-home/
+.wrangler-config/
+.npm-cache/
 .dev.vars
 *.local
 node_modules/
