@@ -8,11 +8,18 @@
 # 安装依赖
 npm install
 
-# 启动开发服务器
+# 启动前端开发服务器
 npm run dev
+
+# 启动完整本地环境（Vite + Cloudflare Pages Functions + 本地 D1）
+./start-dev.sh
 ```
 
-开发服务器启动后访问 http://localhost:5173
+前端开发服务器启动后访问 http://localhost:5173
+
+完整本地环境启动后访问 http://localhost:8788
+
+本地后台管理密码定义在 `.dev.vars` 中，默认值为 `admin123`。
 
 ## 部署到 Cloudflare Pages
 
