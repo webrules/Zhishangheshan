@@ -294,9 +294,14 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       backgroundColor: 'transparent',
       tooltip: {
         show: false,
+        triggerOn: 'none',
       },
       geo: {
         map: 'china',
+        tooltip: {
+          show: false,
+          triggerOn: 'none',
+        },
         roam: true,
         zoom: routeViewport.zoom,
         center: routeViewport.center,
@@ -324,6 +329,9 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
           name: '诗路连线',
           type: 'lines',
           coordinateSystem: 'geo',
+          tooltip: {
+            show: false,
+          },
           data: lineData,
           zlevel: 2,
           lineStyle: {
@@ -345,6 +353,9 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
           name: '路线城市',
           type: 'effectScatter',
           coordinateSystem: 'geo',
+          tooltip: {
+            show: false,
+          },
           data: routePoints,
           zlevel: 3,
           symbolSize: 10,
