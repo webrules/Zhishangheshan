@@ -10,6 +10,7 @@ export default function Header() {
   const navItems = [
     { path: '/', label: '山河图' },
     { path: '/explore', label: '探索' },
+    { path: '/routes', label: '诗路' },
     { path: '/about', label: '关于' },
   ]
 
