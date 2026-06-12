@@ -49,6 +49,78 @@ const ROUTE_CITY_COORDS: Record<string, [number, number]> = {
   敦煌: [94.662, 40.142],
 }
 
+const ROUTE_POEMS: Record<string, { title: string; author: string; lines: string[] }> = {
+  'li-bai-out-of-shu': {
+    title: '渡荆门送别',
+    author: '李白',
+    lines: ['渡远荆门外，来从楚国游。', '山随平野尽，江入大荒流。'],
+  },
+  'du-fu-wandering': {
+    title: '登岳阳楼',
+    author: '杜甫',
+    lines: ['昔闻洞庭水，今上岳阳楼。', '吴楚东南坼，乾坤日夜浮。'],
+  },
+  'bai-juyi-jiangnan': {
+    title: '忆江南',
+    author: '白居易',
+    lines: ['江南好，风景旧曾谙。', '日出江花红胜火，春来江水绿如蓝。'],
+  },
+  'su-shi-southbound': {
+    title: '定风波',
+    author: '苏轼',
+    lines: ['竹杖芒鞋轻胜马，谁怕？', '一蓑烟雨任平生。'],
+  },
+  'xin-qiji-looking-north': {
+    title: '永遇乐·京口北固亭怀古',
+    author: '辛弃疾',
+    lines: ['千古江山，英雄无觅，孙仲谋处。', '想当年，金戈铁马，气吞万里如虎。'],
+  },
+  'lu-you-into-shu': {
+    title: '书愤',
+    author: '陆游',
+    lines: ['楼船夜雪瓜洲渡，铁马秋风大散关。', '出师一表真名世，千载谁堪伯仲间。'],
+  },
+  'wang-wei-zhongnan': {
+    title: '终南别业',
+    author: '王维',
+    lines: ['行到水穷处，坐看云起时。', '偶然值林叟，谈笑无还期。'],
+  },
+  'frontier-poetry-road': {
+    title: '白雪歌送武判官归京',
+    author: '岑参',
+    lines: ['忽如一夜春风来，千树万树梨花开。', '瀚海阑干百丈冰，愁云惨淡万里凝。'],
+  },
+  'xin-qiji-jiangnan': {
+    title: '水龙吟·登建康赏心亭',
+    author: '辛弃疾',
+    lines: ['楚天千里清秋，水随天去秋无际。', '把吴钩看了，栏杆拍遍，无人会，登临意。'],
+  },
+  'bai-juyi-jiangzhou-wuyue': {
+    title: '琵琶行',
+    author: '白居易',
+    lines: ['浔阳江头夜送客，枫叶荻花秋瑟瑟。', '同是天涯沦落人，相逢何必曾相识。'],
+  },
+}
+
+function getRouteViewport(coords: Array<[number, number]>) {
+  if (coords.length === 0) return { center: [104, 35] as [number, number], zoom: 1.15 }
+
+  const longitudes = coords.map(([longitude]) => longitude)
+  const latitudes = coords.map(([, latitude]) => latitude)
+  const minLongitude = Math.min(...longitudes)
+  const maxLongitude = Math.max(...longitudes)
+  const minLatitude = Math.min(...latitudes)
+  const maxLatitude = Math.max(...latitudes)
+  const longitudeSpan = Math.max(maxLongitude - minLongitude, 4)
+  const latitudeSpan = Math.max(maxLatitude - minLatitude, 3)
+  const zoom = Math.min(5.2, Math.max(1.25, Math.min(34 / longitudeSpan, 24 / latitudeSpan)))
+
+  return {
+    center: [(minLongitude + maxLongitude) / 2, (minLatitude + maxLatitude) / 2] as [number, number],
+    zoom,
+  }
+}
+
 function stopKeywords(stopName: string) {
   return stopName.split('/').map((name) => name.trim()).filter(Boolean)
 }
@@ -69,6 +141,8 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstance = useRef<echarts.ECharts | null>(null)
   const [geoLoaded, setGeoLoaded] = useState(Boolean(echarts.getMap('china')))
+  const [poemPosition, setPoemPosition] = useState({ x: 24, y: 24, visible: false })
+  const poem = ROUTE_POEMS[route.id]
 
   useEffect(() => {
     if (echarts.getMap('china')) {
@@ -107,6 +181,7 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       fromName: point.name,
       toName: routePoints[index + 1].name,
     }))
+    const routeViewport = getRouteViewport(routePoints.map((point) => [point.value[0], point.value[1]]))
 
     chart.setOption({
       backgroundColor: 'transparent',
@@ -129,8 +204,8 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       geo: {
         map: 'china',
         roam: true,
-        zoom: 1.15,
-        center: [104, 35],
+        zoom: routeViewport.zoom,
+        center: routeViewport.center,
         scaleLimit: { min: 0.8, max: 8 },
         label: {
           show: false,
@@ -225,13 +300,37 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
   }, [])
 
   return (
-    <div className="relative min-h-[460px] lg:min-h-[680px] rounded-xl overflow-hidden bg-ink-900/40 border border-white/10">
+    <div
+      className="relative min-h-[460px] lg:min-h-[680px] rounded-xl overflow-hidden bg-ink-900/40 border border-white/10"
+      onMouseMove={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect()
+        setPoemPosition({
+          x: Math.min(event.clientX - rect.left + 18, rect.width - 280),
+          y: Math.min(event.clientY - rect.top + 18, rect.height - 150),
+          visible: true,
+        })
+      }}
+      onMouseLeave={() => setPoemPosition((position) => ({ ...position, visible: false }))}
+    >
       {!geoLoaded && (
         <div className="absolute inset-0 flex items-center justify-center text-white/40 font-serif animate-pulse">
           诗路地图加载中...
         </div>
       )}
       <div ref={chartRef} className="absolute inset-0" />
+      {poem && (
+        <div
+          className={`pointer-events-none absolute z-10 w-64 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl transition-opacity duration-150 ${poemPosition.visible ? 'opacity-100' : 'opacity-0'}`}
+          style={{ left: poemPosition.x, top: poemPosition.y }}
+        >
+          <div className="text-gold-400/80 text-xs mb-2">{poem.author} · {poem.title}</div>
+          <div className="font-serif text-white/82 text-sm leading-7">
+            {poem.lines.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
