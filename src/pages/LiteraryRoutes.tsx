@@ -49,56 +49,162 @@ const ROUTE_CITY_COORDS: Record<string, [number, number]> = {
   敦煌: [94.662, 40.142],
 }
 
-const ROUTE_POEMS: Record<string, { title: string; author: string; lines: string[] }> = {
+interface RouteCityPoem {
+  title: string
+  author: string
+  lines: string[]
+}
+
+const ROUTE_CITY_POEMS: Record<string, Record<string, RouteCityPoem>> = {
   'li-bai-out-of-shu': {
-    title: '渡荆门送别',
-    author: '李白',
-    lines: ['渡远荆门外，来从楚国游。', '山随平野尽，江入大荒流。'],
+    重庆: {
+      title: '早发白帝城',
+      author: '李白',
+      lines: ['朝辞白帝彩云间，千里江陵一日还。', '两岸猿声啼不住，轻舟已过万重山。'],
+    },
+    宜昌: {
+      title: '渡荆门送别',
+      author: '李白',
+      lines: ['渡远荆门外，来从楚国游。', '山随平野尽，江入大荒流。'],
+    },
+    荆州: {
+      title: '荆州歌',
+      author: '李白',
+      lines: ['白帝城边足风波，瞿塘五月谁敢过。', '荆州麦熟茧成蛾，缲丝忆君头绪多。'],
+    },
+    武汉: {
+      title: '黄鹤楼送孟浩然之广陵',
+      author: '李白',
+      lines: ['故人西辞黄鹤楼，烟花三月下扬州。', '孤帆远影碧空尽，唯见长江天际流。'],
+    },
+    南京: {
+      title: '登金陵凤凰台',
+      author: '李白',
+      lines: ['凤凰台上凤凰游，凤去台空江自流。', '总为浮云能蔽日，长安不见使人愁。'],
+    },
   },
   'du-fu-wandering': {
-    title: '登岳阳楼',
-    author: '杜甫',
-    lines: ['昔闻洞庭水，今上岳阳楼。', '吴楚东南坼，乾坤日夜浮。'],
+    成都: {
+      title: '春夜喜雨',
+      author: '杜甫',
+      lines: ['好雨知时节，当春乃发生。', '晓看红湿处，花重锦官城。'],
+    },
+    荆州: {
+      title: '公安县怀古',
+      author: '杜甫',
+      lines: ['野旷吕蒙营，江深刘备城。', '寒天催日短，风浪与云平。'],
+    },
+    岳阳: {
+      title: '登岳阳楼',
+      author: '杜甫',
+      lines: ['昔闻洞庭水，今上岳阳楼。', '吴楚东南坼，乾坤日夜浮。'],
+    },
+    长沙: {
+      title: '江南逢李龟年',
+      author: '杜甫',
+      lines: ['岐王宅里寻常见，崔九堂前几度闻。', '正是江南好风景，落花时节又逢君。'],
+    },
   },
   'bai-juyi-jiangnan': {
-    title: '忆江南',
-    author: '白居易',
-    lines: ['江南好，风景旧曾谙。', '日出江花红胜火，春来江水绿如蓝。'],
+    杭州: {
+      title: '忆江南',
+      author: '白居易',
+      lines: ['江南好，风景旧曾谙。', '日出江花红胜火，春来江水绿如蓝。'],
+    },
+    九江: {
+      title: '琵琶行',
+      author: '白居易',
+      lines: ['浔阳江头夜送客，枫叶荻花秋瑟瑟。', '同是天涯沦落人，相逢何必曾相识。'],
+    },
   },
   'su-shi-southbound': {
-    title: '定风波',
-    author: '苏轼',
-    lines: ['竹杖芒鞋轻胜马，谁怕？', '一蓑烟雨任平生。'],
+    杭州: {
+      title: '饮湖上初晴后雨',
+      author: '苏轼',
+      lines: ['水光潋滟晴方好，山色空蒙雨亦奇。', '欲把西湖比西子，淡妆浓抹总相宜。'],
+    },
+    黄州: {
+      title: '定风波',
+      author: '苏轼',
+      lines: ['竹杖芒鞋轻胜马，谁怕？', '一蓑烟雨任平生。'],
+    },
+    惠州: {
+      title: '惠州一绝',
+      author: '苏轼',
+      lines: ['罗浮山下四时春，卢橘杨梅次第新。', '日啖荔枝三百颗，不辞长作岭南人。'],
+    },
   },
   'xin-qiji-looking-north': {
-    title: '永遇乐·京口北固亭怀古',
-    author: '辛弃疾',
-    lines: ['千古江山，英雄无觅，孙仲谋处。', '想当年，金戈铁马，气吞万里如虎。'],
+    镇江: {
+      title: '永遇乐·京口北固亭怀古',
+      author: '辛弃疾',
+      lines: ['千古江山，英雄无觅，孙仲谋处。', '想当年，金戈铁马，气吞万里如虎。'],
+    },
+    南京: {
+      title: '水龙吟·登建康赏心亭',
+      author: '辛弃疾',
+      lines: ['楚天千里清秋，水随天去秋无际。', '把吴钩看了，栏杆拍遍，无人会，登临意。'],
+    },
   },
   'lu-you-into-shu': {
-    title: '书愤',
-    author: '陆游',
-    lines: ['楼船夜雪瓜洲渡，铁马秋风大散关。', '出师一表真名世，千载谁堪伯仲间。'],
+    绍兴: {
+      title: '沈园二首',
+      author: '陆游',
+      lines: ['城上斜阳画角哀，沈园非复旧池台。', '伤心桥下春波绿，曾是惊鸿照影来。'],
+    },
+    镇江: {
+      title: '书愤',
+      author: '陆游',
+      lines: ['楼船夜雪瓜洲渡，铁马秋风大散关。', '出师一表真名世，千载谁堪伯仲间。'],
+    },
   },
   'wang-wei-zhongnan': {
-    title: '终南别业',
-    author: '王维',
-    lines: ['行到水穷处，坐看云起时。', '偶然值林叟，谈笑无还期。'],
+    西安: {
+      title: '终南别业',
+      author: '王维',
+      lines: ['行到水穷处，坐看云起时。', '偶然值林叟，谈笑无还期。'],
+    },
+    蓝田: {
+      title: '辋川闲居赠裴秀才迪',
+      author: '王维',
+      lines: ['寒山转苍翠，秋水日潺湲。', '渡头余落日，墟里上孤烟。'],
+    },
   },
   'frontier-poetry-road': {
-    title: '白雪歌送武判官归京',
-    author: '岑参',
-    lines: ['忽如一夜春风来，千树万树梨花开。', '瀚海阑干百丈冰，愁云惨淡万里凝。'],
+    武威: {
+      title: '凉州馆中与诸判官夜集',
+      author: '岑参',
+      lines: ['弯弯月出挂城头，城头月出照凉州。', '凉州七里十万家，胡人半解弹琵琶。'],
+    },
+    敦煌: {
+      title: '白雪歌送武判官归京',
+      author: '岑参',
+      lines: ['忽如一夜春风来，千树万树梨花开。', '瀚海阑干百丈冰，愁云惨淡万里凝。'],
+    },
   },
   'xin-qiji-jiangnan': {
-    title: '水龙吟·登建康赏心亭',
-    author: '辛弃疾',
-    lines: ['楚天千里清秋，水随天去秋无际。', '把吴钩看了，栏杆拍遍，无人会，登临意。'],
+    南京: {
+      title: '水龙吟·登建康赏心亭',
+      author: '辛弃疾',
+      lines: ['楚天千里清秋，水随天去秋无际。', '把吴钩看了，栏杆拍遍，无人会，登临意。'],
+    },
+    镇江: {
+      title: '永遇乐·京口北固亭怀古',
+      author: '辛弃疾',
+      lines: ['千古江山，英雄无觅，孙仲谋处。', '想当年，金戈铁马，气吞万里如虎。'],
+    },
   },
   'bai-juyi-jiangzhou-wuyue': {
-    title: '琵琶行',
-    author: '白居易',
-    lines: ['浔阳江头夜送客，枫叶荻花秋瑟瑟。', '同是天涯沦落人，相逢何必曾相识。'],
+    九江: {
+      title: '琵琶行',
+      author: '白居易',
+      lines: ['浔阳江头夜送客，枫叶荻花秋瑟瑟。', '同是天涯沦落人，相逢何必曾相识。'],
+    },
+    杭州: {
+      title: '忆江南',
+      author: '白居易',
+      lines: ['江南好，风景旧曾谙。', '日出江花红胜火，春来江水绿如蓝。'],
+    },
   },
 }
 
@@ -141,8 +247,21 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstance = useRef<echarts.ECharts | null>(null)
   const [geoLoaded, setGeoLoaded] = useState(Boolean(echarts.getMap('china')))
-  const [poemPosition, setPoemPosition] = useState({ x: 24, y: 24, visible: false })
-  const poem = ROUTE_POEMS[route.id]
+  const [hoveredPoem, setHoveredPoem] = useState<RouteCityPoem | null>(null)
+  const [poemPosition, setPoemPosition] = useState({ x: 24, y: 24 })
+  const routePoints = useMemo(() => {
+    return route.stops
+      .map((stop, index) => {
+        const coord = ROUTE_CITY_COORDS[stop.name]
+        if (!coord) return null
+        return {
+          name: stop.name,
+          value: [...coord, index + 1] as [number, number, number],
+          stop,
+        }
+      })
+      .filter(Boolean) as Array<{ name: string; value: [number, number, number]; stop: LiteraryRoute['stops'][number] }>
+  }, [route])
 
   useEffect(() => {
     if (echarts.getMap('china')) {
@@ -163,18 +282,6 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
 
     const chart = chartInstance.current || echarts.init(chartRef.current, undefined, { renderer: 'canvas' })
     chartInstance.current = chart
-
-    const routePoints = route.stops
-      .map((stop, index) => {
-        const coord = ROUTE_CITY_COORDS[stop.name]
-        if (!coord) return null
-        return {
-          name: stop.name,
-          value: [...coord, index + 1],
-          stop,
-        }
-      })
-      .filter(Boolean) as Array<{ name: string; value: [number, number, number]; stop: LiteraryRoute['stops'][number] }>
 
     const lineData = routePoints.slice(0, -1).map((point, index) => ({
       coords: [point.value.slice(0, 2), routePoints[index + 1].value.slice(0, 2)],
@@ -284,13 +391,54 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       ],
     }, true)
 
+    const updateHoveredPoem = (offsetX: number, offsetY: number) => {
+      const nearest = routePoints.reduce<{ name: string; distance: number } | null>((currentNearest, point) => {
+        const pixel = chart.convertToPixel({ geoIndex: 0 }, point.value.slice(0, 2)) as number[] | undefined
+        if (!pixel) return currentNearest
+
+        const distance = Math.hypot(pixel[0] - offsetX, pixel[1] - offsetY)
+        if (!currentNearest || distance < currentNearest.distance) {
+          return { name: point.name, distance }
+        }
+        return currentNearest
+      }, null)
+
+      if (nearest && nearest.distance <= 72) {
+        setHoveredPoem(ROUTE_CITY_POEMS[route.id]?.[nearest.name] || null)
+      } else {
+        setHoveredPoem(null)
+      }
+    }
+
+    const zr = chart.getZr()
+    zr.off('mousemove')
+    zr.off('mouseout')
+    zr.on('mousemove', (event: any) => {
+      const offsetX = event.offsetX ?? event.zrX ?? event.event?.offsetX
+      const offsetY = event.offsetY ?? event.zrY ?? event.event?.offsetY
+      if (typeof offsetX !== 'number' || typeof offsetY !== 'number') return
+
+      const width = chart.getWidth()
+      const height = chart.getHeight()
+      setPoemPosition({
+        x: Math.min(offsetX + 18, width - 280),
+        y: Math.min(offsetY + 18, height - 150),
+      })
+      updateHoveredPoem(offsetX, offsetY)
+    })
+    zr.on('mouseout', () => {
+      setHoveredPoem(null)
+    })
+
     const handleResize = () => chart.resize()
     window.addEventListener('resize', handleResize)
 
     return () => {
+      zr.off('mousemove')
+      zr.off('mouseout')
       window.removeEventListener('resize', handleResize)
     }
-  }, [geoLoaded, route])
+  }, [geoLoaded, route, routePoints])
 
   useEffect(() => {
     return () => {
@@ -307,10 +455,29 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
         setPoemPosition({
           x: Math.min(event.clientX - rect.left + 18, rect.width - 280),
           y: Math.min(event.clientY - rect.top + 18, rect.height - 150),
-          visible: true,
         })
+
+        const chart = chartInstance.current
+        if (!chart) return
+
+        const nearest = routePoints.reduce<{ name: string; distance: number } | null>((currentNearest, point) => {
+          const pixel = chart.convertToPixel({ geoIndex: 0 }, point.value.slice(0, 2)) as number[] | undefined
+          if (!pixel) return currentNearest
+
+          const distance = Math.hypot(pixel[0] - (event.clientX - rect.left), pixel[1] - (event.clientY - rect.top))
+          if (!currentNearest || distance < currentNearest.distance) {
+            return { name: point.name, distance }
+          }
+          return currentNearest
+        }, null)
+
+        if (nearest && nearest.distance <= 72) {
+          setHoveredPoem(ROUTE_CITY_POEMS[route.id]?.[nearest.name] || null)
+        } else {
+          setHoveredPoem(null)
+        }
       }}
-      onMouseLeave={() => setPoemPosition((position) => ({ ...position, visible: false }))}
+      onMouseLeave={() => setHoveredPoem(null)}
     >
       {!geoLoaded && (
         <div className="absolute inset-0 flex items-center justify-center text-white/40 font-serif animate-pulse">
@@ -318,14 +485,14 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
         </div>
       )}
       <div ref={chartRef} className="absolute inset-0" />
-      {poem && (
+      {hoveredPoem && (
         <div
-          className={`pointer-events-none absolute z-10 w-64 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl transition-opacity duration-150 ${poemPosition.visible ? 'opacity-100' : 'opacity-0'}`}
+          className="pointer-events-none absolute z-10 w-64 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl"
           style={{ left: poemPosition.x, top: poemPosition.y }}
         >
-          <div className="text-gold-400/80 text-xs mb-2">{poem.author} · {poem.title}</div>
+          <div className="text-gold-400/80 text-xs mb-2">{hoveredPoem.author} · {hoveredPoem.title}</div>
           <div className="font-serif text-white/82 text-sm leading-7">
-            {poem.lines.map((line) => (
+            {hoveredPoem.lines.map((line) => (
               <div key={line}>{line}</div>
             ))}
           </div>
