@@ -421,7 +421,7 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       const width = chart.getWidth()
       const height = chart.getHeight()
       setPoemPosition({
-        x: Math.min(offsetX + 18, width - 280),
+        x: Math.min(offsetX + 18, width - 360),
         y: Math.min(offsetY + 18, height - 150),
       })
       updateHoveredPoem(offsetX, offsetY)
@@ -487,11 +487,11 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       <div ref={chartRef} className="absolute inset-0" />
       {hoveredPoem && (
         <div
-          className="pointer-events-none absolute z-10 w-64 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl"
+          className="pointer-events-none absolute z-10 w-80 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl"
           style={{ left: poemPosition.x, top: poemPosition.y }}
         >
           <div className="text-gold-400/80 text-xs mb-2">{hoveredPoem.author} · {hoveredPoem.title}</div>
-          <div className="font-serif text-white/82 text-sm leading-7">
+          <div className="font-serif text-white/82 text-sm leading-7 whitespace-nowrap">
             {hoveredPoem.lines.map((line) => (
               <div key={line}>{line}</div>
             ))}
