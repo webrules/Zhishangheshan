@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import Header from './components/Header'
 import Home from './pages/Home'
 import Explore from './pages/Explore'
+import LiteraryRoutes from './pages/LiteraryRoutes'
 import WorkDetail from './pages/WorkDetail'
 import About from './pages/About'
 import AdminLogin from './pages/AdminLogin'
@@ -17,6 +18,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/routes" element={<LiteraryRoutes />} />
           <Route path="/work/:id" element={<WorkDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin/login" element={<AdminLogin />} />

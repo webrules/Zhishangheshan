@@ -1,0 +1,412 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import * as echarts from 'echarts'
+import { fetchWorks } from '../lib/api'
+import { LITERARY_ROUTES } from '../lib/routes'
+import type { LiteraryRoute } from '../lib/routes'
+import type { Work } from '../lib/types'
+
+const ROUTE_CITY_COORDS: Record<string, [number, number]> = {
+  江油: [104.745, 31.778],
+  绵阳: [104.679, 31.467],
+  成都: [104.066, 30.572],
+  '峨眉山 / 乐山': [103.765, 29.552],
+  重庆: [106.551, 29.563],
+  宜昌: [111.286, 30.692],
+  荆州: [112.239, 30.336],
+  武汉: [114.305, 30.593],
+  九江: [115.953, 29.662],
+  南京: [118.797, 32.06],
+  西安: [108.94, 34.342],
+  天水: [105.724, 34.581],
+  岳阳: [113.129, 29.357],
+  长沙: [112.938, 28.228],
+  衡阳: [112.572, 26.894],
+  洛阳: [112.454, 34.619],
+  杭州: [120.155, 30.274],
+  苏州: [120.585, 31.299],
+  扬州: [119.412, 32.394],
+  庐山: [115.974, 29.557],
+  开封: [114.307, 34.798],
+  湖州: [120.086, 30.894],
+  黄州: [114.879, 30.435],
+  惠州: [114.416, 23.112],
+  儋州: [109.58, 19.52],
+  济南: [117.12, 36.652],
+  镇江: [119.425, 32.189],
+  上饶: [117.943, 28.454],
+  鹰潭: [117.069, 28.26],
+  福州: [119.296, 26.074],
+  绍兴: [120.582, 29.998],
+  蓝田: [109.323, 34.151],
+  华阴: [110.089, 34.565],
+  嵩山: [113.05, 34.453],
+  兰州: [103.834, 36.061],
+  武威: [102.638, 37.928],
+  张掖: [100.449, 38.925],
+  嘉峪关: [98.289, 39.773],
+  敦煌: [94.662, 40.142],
+}
+
+function stopKeywords(stopName: string) {
+  return stopName.split('/').map((name) => name.trim()).filter(Boolean)
+}
+
+function routeMatchesWork(route: LiteraryRoute, work: Work) {
+  const poets = route.poet.split('/').map((name) => name.trim())
+  const matchesPoet = poets.some((poet) => work.author.includes(poet))
+  const matchesStop = route.stops.some((stop) => {
+    return stopKeywords(stop.name).some((keyword) => {
+      return work.scenic_spot.includes(keyword) || work.description.includes(keyword)
+    })
+  })
+
+  return matchesPoet || matchesStop
+}
+
+function RouteChinaMap({ route }: { route: LiteraryRoute }) {
+  const chartRef = useRef<HTMLDivElement>(null)
+  const chartInstance = useRef<echarts.ECharts | null>(null)
+  const [geoLoaded, setGeoLoaded] = useState(Boolean(echarts.getMap('china')))
+
+  useEffect(() => {
+    if (echarts.getMap('china')) {
+      setGeoLoaded(true)
+      return
+    }
+
+    fetch('/china.json')
+      .then((res) => res.json())
+      .then((geoJson) => {
+        echarts.registerMap('china', geoJson)
+        setGeoLoaded(true)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!chartRef.current || !geoLoaded) return
+
+    const chart = chartInstance.current || echarts.init(chartRef.current, undefined, { renderer: 'canvas' })
+    chartInstance.current = chart
+
+    const routePoints = route.stops
+      .map((stop, index) => {
+        const coord = ROUTE_CITY_COORDS[stop.name]
+        if (!coord) return null
+        return {
+          name: stop.name,
+          value: [...coord, index + 1],
+          stop,
+        }
+      })
+      .filter(Boolean) as Array<{ name: string; value: [number, number, number]; stop: LiteraryRoute['stops'][number] }>
+
+    const lineData = routePoints.slice(0, -1).map((point, index) => ({
+      coords: [point.value.slice(0, 2), routePoints[index + 1].value.slice(0, 2)],
+      fromName: point.name,
+      toName: routePoints[index + 1].name,
+    }))
+
+    chart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'item',
+        className: 'echarts-tooltip-custom',
+        formatter: (params: any) => {
+          if (params.seriesType === 'effectScatter') {
+            return `<div style="font-family: 'Noto Serif SC', serif;">
+              <div style="font-size: 14px; color: #f0c060; margin-bottom: 4px;">${params.data.value[2]}. ${params.name}</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.55);">${params.data.stop?.province || '路线节点'}</div>
+            </div>`
+          }
+          if (params.seriesType === 'lines') {
+            return `<div style="font-family: 'Noto Sans SC', sans-serif; color: rgba(255,255,255,0.75);">${params.data.fromName} → ${params.data.toName}</div>`
+          }
+          return ''
+        },
+      },
+      geo: {
+        map: 'china',
+        roam: true,
+        zoom: 1.15,
+        center: [104, 35],
+        scaleLimit: { min: 0.8, max: 8 },
+        label: {
+          show: false,
+        },
+        itemStyle: {
+          areaColor: 'rgba(26, 26, 37, 0.88)',
+          borderColor: 'rgba(240, 192, 96, 0.22)',
+          borderWidth: 1,
+        },
+        emphasis: {
+          itemStyle: {
+            areaColor: 'rgba(92, 224, 216, 0.08)',
+            borderColor: '#5ce0d8',
+          },
+          label: {
+            show: false,
+          },
+        },
+      },
+      series: [
+        {
+          name: '诗路连线',
+          type: 'lines',
+          coordinateSystem: 'geo',
+          data: lineData,
+          zlevel: 2,
+          lineStyle: {
+            color: '#f0c060',
+            width: 2,
+            opacity: 0.76,
+            curveness: 0.18,
+          },
+          effect: {
+            show: true,
+            period: 6,
+            trailLength: 0.18,
+            symbol: 'arrow',
+            symbolSize: 8,
+            color: '#5ce0d8',
+          },
+        },
+        {
+          name: '路线城市',
+          type: 'effectScatter',
+          coordinateSystem: 'geo',
+          data: routePoints,
+          zlevel: 3,
+          symbolSize: 10,
+          rippleEffect: {
+            brushType: 'stroke',
+            scale: 3,
+          },
+          label: {
+            show: true,
+            formatter: (params: any) => `${params.data.value[2]}. ${params.name}`,
+            position: 'right',
+            color: 'rgba(255,255,255,0.78)',
+            fontSize: 11,
+            fontFamily: 'Noto Serif SC',
+          },
+          itemStyle: {
+            color: '#5ce0d8',
+            shadowBlur: 12,
+            shadowColor: 'rgba(92, 224, 216, 0.55)',
+          },
+          emphasis: {
+            itemStyle: {
+              color: '#f0c060',
+            },
+            label: {
+              color: '#f0c060',
+              fontWeight: 'bold',
+            },
+          },
+        },
+      ],
+    }, true)
+
+    const handleResize = () => chart.resize()
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [geoLoaded, route])
+
+  useEffect(() => {
+    return () => {
+      chartInstance.current?.dispose()
+      chartInstance.current = null
+    }
+  }, [])
+
+  return (
+    <div className="relative min-h-[460px] lg:min-h-[680px] rounded-xl overflow-hidden bg-ink-900/40 border border-white/10">
+      {!geoLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center text-white/40 font-serif animate-pulse">
+          诗路地图加载中...
+        </div>
+      )}
+      <div ref={chartRef} className="absolute inset-0" />
+    </div>
+  )
+}
+
+export default function LiteraryRoutes() {
+  const [works, setWorks] = useState<Work[]>([])
+  const [selectedRouteId, setSelectedRouteId] = useState(LITERARY_ROUTES[0].id)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (import.meta.env.DEV && window.location.port !== '8788') {
+      setLoading(false)
+      return
+    }
+
+    fetchWorks({ limit: 2000 })
+      .then((res) => {
+        if (res.success && res.data) {
+          setWorks(res.data)
+        }
+      })
+      .catch(() => {
+        setWorks([])
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  const selectedRoute = useMemo(() => {
+    return LITERARY_ROUTES.find((route) => route.id === selectedRouteId) || LITERARY_ROUTES[0]
+  }, [selectedRouteId])
+
+  const relatedWorks = useMemo(() => {
+    return works.filter((work) => routeMatchesWork(selectedRoute, work)).slice(0, 8)
+  }, [selectedRoute, works])
+
+  return (
+    <div className="min-h-screen pt-24 pb-12 px-4 md:px-8 ink-texture">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <p className="text-gold-400/70 text-sm mb-3">Curated Routes</p>
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl md:text-4xl text-white/95 glow-text">诗路游线</h1>
+              <p className="text-white/45 text-sm md:text-base mt-3 max-w-2xl">
+                以诗人与主题组织山河路径，从静态城市线索出发，连接现有作品、景点和详情页。
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-center text-sm">
+              <div className="glass-card px-4 py-3">
+                <div className="font-serif text-2xl text-gradient-gold">{LITERARY_ROUTES.length}</div>
+                <div className="text-white/40 mt-1">条路线</div>
+              </div>
+              <div className="glass-card px-4 py-3">
+                <div className="font-serif text-2xl text-gradient-jade">{selectedRoute.stops.length}</div>
+                <div className="text-white/40 mt-1">个节点</div>
+              </div>
+              <div className="glass-card px-4 py-3">
+                <div className="font-serif text-2xl text-gradient-gold">{relatedWorks.length}</div>
+                <div className="text-white/40 mt-1">相关作品</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-start">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="glass-card p-3 lg:sticky lg:top-24"
+          >
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
+              {LITERARY_ROUTES.map((route, index) => {
+                const active = route.id === selectedRoute.id
+                return (
+                  <button
+                    key={route.id}
+                    onClick={() => setSelectedRouteId(route.id)}
+                    className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
+                      active
+                        ? 'bg-gold-400/10 border-gold-400/40'
+                        : 'bg-white/[0.03] border-white/5 hover:bg-white/5 hover:border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs border ${active ? 'text-gold-400 border-gold-400/40' : 'text-white/35 border-white/10'}`}>
+                        {index + 1}
+                      </span>
+                      <div>
+                        <div className="font-serif text-white/85">{route.title}</div>
+                        <div className="text-xs text-white/35 mt-1">{route.theme} · {route.stops.length} 站</div>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </motion.div>
+
+          <motion.div
+            key={selectedRoute.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="space-y-6"
+          >
+            <section className="glass-card p-6 md:p-8 overflow-hidden relative">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="px-3 py-1 rounded-full bg-jade-400/10 border border-jade-400/20 text-jade-400/80 text-xs">
+                      {selectedRoute.theme}
+                    </span>
+                    <span className="text-white/35 text-sm">{selectedRoute.poet}</span>
+                  </div>
+                  <h2 className="font-serif text-3xl text-white/95">{selectedRoute.title}</h2>
+                  <p className="text-white/55 leading-relaxed mt-4 max-w-3xl">{selectedRoute.summary}</p>
+                </div>
+                <Link
+                  to={`/explore?search=${encodeURIComponent(selectedRoute.poet.split('/')[0].trim())}`}
+                  className="shrink-0 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm hover:text-gold-400 hover:border-gold-400/30 transition-colors"
+                >
+                  搜索相关作者
+                </Link>
+              </div>
+
+              <div>
+                <RouteChinaMap route={selectedRoute} />
+              </div>
+            </section>
+
+            <section className="glass-card p-6 md:p-8">
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div>
+                  <h3 className="font-serif text-xl text-white/85">馆藏关联</h3>
+                  <p className="text-white/35 text-sm mt-1">按作者、景点和描述中的城市线索自动匹配。</p>
+                </div>
+                {loading && <span className="text-white/35 text-sm animate-pulse">加载中...</span>}
+              </div>
+
+              {!loading && relatedWorks.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 text-white/40 text-sm">
+                  暂无匹配作品。后续可以在后台为作品补充城市字段，让路线匹配更精准。
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {relatedWorks.map((work) => (
+                    <Link
+                      key={work.id}
+                      to={`/work/${work.id}`}
+                      className="group rounded-xl border border-white/10 bg-white/[0.04] p-4 hover:bg-white/[0.07] hover:border-gold-400/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-serif text-white/85 group-hover:text-gold-400 transition-colors">{work.title}</h4>
+                          <p className="text-white/40 text-sm mt-1">{work.author} · {work.dynasty}</p>
+                        </div>
+                        <span className="text-jade-400/70 text-xs whitespace-nowrap">{work.province}</span>
+                      </div>
+                      <p className="text-white/35 text-sm mt-3 line-clamp-2">{work.scenic_spot}</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  )
+}
