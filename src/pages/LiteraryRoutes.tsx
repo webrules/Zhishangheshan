@@ -293,20 +293,7 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
     chart.setOption({
       backgroundColor: 'transparent',
       tooltip: {
-        trigger: 'item',
-        className: 'echarts-tooltip-custom',
-        formatter: (params: any) => {
-          if (params.seriesType === 'effectScatter') {
-            return `<div style="font-family: 'Noto Serif SC', serif;">
-              <div style="font-size: 14px; color: #f0c060; margin-bottom: 4px;">${params.data.value[2]}. ${params.name}</div>
-              <div style="font-size: 12px; color: rgba(255,255,255,0.55);">${params.data.stop?.province || '路线节点'}</div>
-            </div>`
-          }
-          if (params.seriesType === 'lines') {
-            return `<div style="font-family: 'Noto Sans SC', sans-serif; color: rgba(255,255,255,0.75);">${params.data.fromName} → ${params.data.toName}</div>`
-          }
-          return ''
-        },
+        show: false,
       },
       geo: {
         map: 'china',
@@ -453,7 +440,7 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       onMouseMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect()
         setPoemPosition({
-          x: Math.min(event.clientX - rect.left + 18, rect.width - 280),
+          x: Math.min(event.clientX - rect.left + 18, rect.width - 360),
           y: Math.min(event.clientY - rect.top + 18, rect.height - 150),
         })
 
@@ -487,7 +474,7 @@ function RouteChinaMap({ route }: { route: LiteraryRoute }) {
       <div ref={chartRef} className="absolute inset-0" />
       {hoveredPoem && (
         <div
-          className="pointer-events-none absolute z-10 w-80 rounded-xl border border-gold-400/25 bg-ink-900/88 backdrop-blur-md px-4 py-3 shadow-2xl"
+          className="pointer-events-none absolute z-20 w-80 rounded-xl border border-gold-400/25 bg-ink-900/95 backdrop-blur-md px-4 py-3 shadow-2xl"
           style={{ left: poemPosition.x, top: poemPosition.y }}
         >
           <div className="text-gold-400/80 text-xs mb-2">{hoveredPoem.author} · {hoveredPoem.title}</div>
